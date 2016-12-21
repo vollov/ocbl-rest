@@ -1,0 +1,19 @@
+## create server side authentication
+
+### create account model
+[1] not use User model, because User cannot add fields
+[2] create an authentication app
+[3] create an Account Extends from AbstractBaseUser
+[4] To treat the email field as the username for this model, we set the USERNAME_FIELD attribute to email. 
+[5] define a related Manager class the overrides the create_user() and create_superuser() methods.
+[6] Changing the Django AUTH_USER_MODEL setting: AUTH_USER_MODEL = 'authentication.Account'
+
+### Serializing the Account Model
+[1] define optional field in the AccountSerializer by set write_only=True, required=False
+
+password = serializers.CharField(write_only=True, required=False)
+confirm_password = serializers.CharField(write_only=True, required=False)
+
+
+[2] When a user's password is updated, their session authentication hash must be explicitly updated.
+update_session_auth_hash(self.context.get('request'), instance)
