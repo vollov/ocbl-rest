@@ -27,8 +27,8 @@ router.register(r'accounts', AccountViewSet)
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/v1/', include(router.urls)),
-    url(r'^api/v1/auth/login/$', LoginView.as_view(), name='login'),
-    url(r'^api/v1/auth/logout/$', LogoutView.as_view(), name='logout'),
+    url(r'^api/v1/login/$', LoginView.as_view(), name='login'),
+    url(r'^api/v1/logout/$', LogoutView.as_view(), name='logout'),
 ]
 
 # settings for development environment DEBUG
