@@ -156,7 +156,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'accounts': {
+        'authentication': {
             'handlers': ['debug.logfile', 'console'],
             'level': 'DEBUG',
             'propagate': True,
@@ -227,3 +227,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
+
+JWT_SECRET='9&u8d5cc%'
+JWT_ALGORITHM='HS256'

@@ -6,7 +6,28 @@ from .models import Account
 from .permissions import IsAccountOwner
 from .serializers import AccountSerializer
 
+import datetime, time
+from jose import jwt
+from app.settings import JWT_SECRET,JWT_ALGORITHM
 
+import logging
+log = logging.getLogger(__name__)
+
+
+def generateToken(payload):
+    
+    # get current time, seconds since the epoch are UTC based
+    #current_time = timegm(datetime.utcnow().utctimetuple())
+    now = datetime.datetime.now()
+    token_expire_at = now + datetime.timedelta(minutes = 10)
+    token_expire_in_seconds = time.mktime(token_expire_at.timetuple())
+    
+    # The time after which the token is invalid.
+    claims = {'exp': token_expire_in_seconds, 'payload': payload}
+    
+    token = jwt.encode(claims, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return token
+    
 class AccountViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     queryset = Account.objects.all()
@@ -24,7 +45,7 @@ class AccountViewSet(viewsets.ModelViewSet):
 
         if serializer.is_valid():
             Account.objects.create_user(**serializer.validated_data)
-            return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+            return Response(generateToken(serializer.validated_data), status=status.HTTP_201_CREATED)
 
         return Response({
             'status': 'Bad request',
@@ -36,15 +57,20 @@ class LoginView(views.APIView):
 
     def post(self, request, format=None):
         data = request.data
+        
+        log.debug('get login post data = {0}'.format(data))
+        
         email = data.get('email', None)
         password = data.get('password', None)
+        
+        log.debug('get login post with email = {0} and password = {1}'.format(email, password))
         account = authenticate(email=email, password=password)
 
         # fail, bad login info
         if account is None:
             return Response({
                 'status': 'Unauthorized',
-                'message': 'Username/password combination invalid.'
+                'message': 'email/password combination invalid.'
             }, status=status.HTTP_401_UNAUTHORIZED)
 
         # fail, inactive account
@@ -57,7 +83,7 @@ class LoginView(views.APIView):
         # success, login and respond
         login(request, account)
         serialized = AccountSerializer(account)
-        return Response(serialized.data)
+        return Response(generateToken(serialized.data))
 
 
 class LogoutView(views.APIView):
