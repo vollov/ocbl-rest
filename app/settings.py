@@ -32,7 +32,6 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -45,6 +44,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'app.middleware.CorsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -224,9 +224,12 @@ LOCALE_PATHS = [
 AUTH_USER_MODEL = 'authentication.Account'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
+        #'rest_framework.authentication.SessionAuthentication',
+        'app.security.JWTAuthentication',
     )
 }
 
-JWT_SECRET='9&u8d5cc%'
-JWT_ALGORITHM='HS256'
+JWT_SECRET = 'JNIOI&(56!'
+JWT_SIGN_ALGORITHM = 'HS256'
+JWT_EXPIRE_IN_MINUTE=60
+JWT_HEADER='Bearer'

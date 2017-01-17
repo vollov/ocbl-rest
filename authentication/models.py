@@ -5,7 +5,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.core.mail import send_mail
-
+from datetime import date 
 
 class AccountManager(BaseUserManager):
     def create_user(self, email, password=None, **kwargs):

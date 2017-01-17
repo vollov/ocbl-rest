@@ -1,5 +1,19 @@
-python manage.py dumpdata auth.User --indent 4 > user.json
+python manage.py dumpdata authentication.account --indent 4 > account.json
 
 python manage.py dumpdata content.SystemSetting --indent 4 > setting.json
 
 python manage.py loaddata user.json
+
+#test login
+curl -v -H "Content-Type: application/json" -X POST --data-binary "@kate.json" http://localhost:8000/api/v1/login/
+
+curl -v -H "Content-Type: application/json"  -H "Authorization: JWT_TOKEN AABBCC"  -X GET http://localhost:8000/api/v1/accounts/admin
+
+Authorization:  Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjozLCJlbWFpbCI6ImFkbWluQG9jYmwuY2EiLCJ1c2VybmFtZSI6ImFkbWluIiwiY3JlYXRlZF9hdCI6IjIwMTYtMTItMjVUMjE6MDY6NDlaIiwidXBkYXRlZF9hdCI6IjIwMTYtMTItMjVUMjE6MDY6NDlaIiwiZmlyc3RfbmFtZSI6IiIsImxhc3RfbmFtZSI6IiIsImJpcnRoX3llYXIiOjE5ODh9LCJleHAiOjE0ODI4MDg3NTUuMH0.z_EuoXfH6r7q7pJBsiyf9PDgtTIN_RNJ-w2TBKpEFOU
+USE information_schema;
+SELECT *
+FROM
+  KEY_COLUMN_USAGE
+WHERE
+  REFERENCED_TABLE_NAME = 'authentication_account'
+  AND REFERENCED_COLUMN_NAME = 'id';

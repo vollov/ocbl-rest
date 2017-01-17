@@ -1,41 +1,43 @@
-import json
+
 from django.contrib.auth import authenticate, login, logout
 from rest_framework import permissions, viewsets, status, views
 from rest_framework.response import Response
-from .models import Account
-from .permissions import IsAccountOwner
-from .serializers import AccountSerializer
-
+from models import Account
+from permissions import IsAccountOwner
+from serializers import AccountSerializer
+from rest_framework.authentication import SessionAuthentication
 import datetime, time
 from jose import jwt
-from app.settings import JWT_SECRET,JWT_ALGORITHM
+from app.settings import JWT_SECRET,JWT_SIGN_ALGORITHM,JWT_EXPIRE_IN_MINUTE
 
 import logging
 log = logging.getLogger(__name__)
 
 
-def generateToken(payload):
+def generateToken(user):
     
     # get current time, seconds since the epoch are UTC based
     #current_time = timegm(datetime.utcnow().utctimetuple())
     now = datetime.datetime.now()
-    token_expire_at = now + datetime.timedelta(minutes = 10)
+    token_expire_at = now + datetime.timedelta(minutes = JWT_EXPIRE_IN_MINUTE)
     token_expire_in_seconds = time.mktime(token_expire_at.timetuple())
     
     # The time after which the token is invalid.
-    claims = {'exp': token_expire_in_seconds, 'payload': payload}
+    claims = {'exp': token_expire_in_seconds, 'user': user}
     
-    token = jwt.encode(claims, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    token = jwt.encode(claims, JWT_SECRET, algorithm=JWT_SIGN_ALGORITHM)
     return token
     
+
 class AccountViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
-
+    authentication_classes = (SessionAuthentication,)
+    #JWTAuthentication
     def get_permissions(self):
-        if self.request.method in permissions.SAFE_METHODS:
-            return permissions.AllowAny(),
+#         if self.request.method in permissions.SAFE_METHODS:
+#             return permissions.AllowAny(),
         if self.request.method == 'POST':
             return permissions.AllowAny(),
         return permissions.IsAuthenticated(), IsAccountOwner()
@@ -51,7 +53,6 @@ class AccountViewSet(viewsets.ModelViewSet):
             'status': 'Bad request',
             'message': 'Account could not be created with received data.'
             }, status=status.HTTP_400_BAD_REQUEST)
-
 
 class LoginView(views.APIView):
 
@@ -83,7 +84,7 @@ class LoginView(views.APIView):
         # success, login and respond
         login(request, account)
         serialized = AccountSerializer(account)
-        return Response(generateToken(serialized.data))
+        return Response(generateToken(serialized.data), status=status.HTTP_200_OK)
 
 
 class LogoutView(views.APIView):
